@@ -9,6 +9,7 @@ use actix_web::{
     HttpRequest,
     HttpResponse,
     error,
+    pred,
     middleware::{
         Middleware,
         Started,
@@ -25,6 +26,10 @@ impl<S> Middleware<S> for cURLFilter {
     }
 }
 
+fn ping(_: HttpRequest) -> impl Responder {
+    "pong"
+}
+
 fn hello_name(req: HttpRequest) -> impl Responder {
     println!("hello_name: {:?}", req);
     "ok"
@@ -34,6 +39,11 @@ fn main() {
     server::new(|| {
         App::new()
             .middleware(cURLFilter)
+            .resource("/ping", |r| {
+                r.route()
+                    .filter(pred::Header("Content-Type", "text"))
+                    .f(ping)
+            })
             .route("/hello/{name}", http::Method::GET, hello_name)
     }).bind("127.0.0.1:8080")
     .unwrap()
