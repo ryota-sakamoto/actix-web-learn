@@ -35,6 +35,10 @@ fn hello_name(req: HttpRequest) -> impl Responder {
     "ok"
 }
 
+fn return_binary(_: HttpRequest) -> impl Responder {
+    "binary".as_bytes()
+}
+
 fn main() {
     server::new(|| {
         App::new()
@@ -45,6 +49,7 @@ fn main() {
                     .f(ping)
             })
             .route("/hello/{name}", http::Method::GET, hello_name)
+            .route("/binary", http::Method::GET, return_binary)
     }).bind("127.0.0.1:8080")
     .unwrap()
     .run();
