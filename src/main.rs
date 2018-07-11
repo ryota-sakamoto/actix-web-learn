@@ -14,6 +14,11 @@ use actix_web::{
         Middleware,
         Started,
     },
+    Path,
+};
+use std::{
+    time::Duration,
+    thread,
 };
 
 struct cURLFilter;
@@ -39,6 +44,15 @@ fn return_binary(_: HttpRequest) -> impl Responder {
     "binary".as_bytes()
 }
 
+fn created(_: HttpRequest) -> impl Responder {
+    HttpResponse::new(StatusCode::CREATED)
+}
+
+fn sleep(p: Path<(u64)>) -> impl Responder {
+    thread::sleep(Duration::from_millis(1000 * p.as_ref()));
+    format!("sleep: {} secs", p.as_ref())
+}
+
 fn main() {
     server::new(|| {
         App::new()
@@ -50,6 +64,8 @@ fn main() {
             })
             .route("/hello/{name}", http::Method::GET, hello_name)
             .route("/binary", http::Method::GET, return_binary)
+            .route("/created", http::Method::POST, created)
+            .route("/sleep/{time}", http::Method::GET, sleep)
     }).bind("127.0.0.1:8080")
     .unwrap()
     .run();
